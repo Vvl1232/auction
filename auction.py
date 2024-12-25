@@ -101,6 +101,5 @@ if st.button("🎉 End Bidding 🎉"):
 
 # Display current bids if bidding has ended
 if st.session_state.show_bids:
-    st.write("💬 Current Bids:")
     for team, bid in st.session_state.bids.items():
         st.write(f"📢 Team {team}: ${bid} 💸")
