@@ -1,4 +1,7 @@
 import random as rd
+import streamlit as st
+
+# List of IPL players
 ipl_players = [
     "Virat Kohli", "MS Dhoni", "Rohit Sharma", "AB de Villiers", "Chris Gayle",
     "David Warner", "Andre Russell", "Suresh Raina", "Ravindra Jadeja", "Shikhar Dhawan",
@@ -42,27 +45,62 @@ ipl_players = [
     "Gurkeerat Singh Mann", "Sunny Singh", "Iqbal Abdulla", "Manan Vohra", "Arun Karthik",
     "Baba Aparajith", "Unmukt Chand", "Tanmay Srivastava", "Saurabh Tiwary", "Ankit Rajpoot"
 ]
-player_to_bid=rd.choice(ipl_players)
-print(player_to_bid)
 
+# Function to determine the highest bidder
 def highest_bidder(bids):
     highest_bid = 0
     winner = ""
-    for bidder in bids:
-        amount = bids[bidder]
+    for bidder, amount in bids.items():
         if amount > highest_bid:
             highest_bid = amount
             winner = bidder
     return winner, highest_bid
 
-bids = {}
-choice = "yes"
-while choice == "yes":
-    team_name = input("Bidder team name: ")
-    bid = int(input("Bidding amount: $"))
-    bids[team_name] = bid 
-    choice = input("Are there any more bidders 'yes' or 'no': ").lower()
-    if choice == "no":
-        winner, highest_bid = highest_bidder(bids)
-        print(f"The highest bidder was {winner} with a bid of ${highest_bid}")
-        choice = "no"
+# Streamlit app setup
+st.title("🎉MEGA-AUCTION🎉")
+st.title("💥 IPL Player Bidding Platform 💥")
+st.write("Welcome to the IPL Player Bidding Platform! 🏏 Place your bids and see who wins the player! 🚀")
+
+# Select a random player
+if "player_to_bid" not in st.session_state:
+    st.session_state.player_to_bid = rd.choice(ipl_players)
+
+st.subheader(f"✨ Player for Bidding: {st.session_state.player_to_bid} ✨")
+
+# Initialize bids
+if "bids" not in st.session_state:
+    st.session_state.bids = {}
+if "show_bids" not in st.session_state:
+    st.session_state.show_bids = False
+
+# Bidding form
+with st.form("bidding_form"):
+    team_name = st.text_input("🏆 Enter your team name:", key="team_name")
+    bid_amount = st.number_input("💵 Enter your bid amount ($):", min_value=100, step=50, key="bid_amount")
+    submit_bid = st.form_submit_button("Place Bid 🔥")
+
+if submit_bid:
+    if team_name and bid_amount > 0:
+        st.session_state.bids[team_name] = bid_amount
+        st.success(f"🎯 Bid placed successfully for {team_name}!")
+    else:
+        st.error("⚠️ Please enter a valid team name and bid amount.")
+
+# End bidding and determine winner
+if st.button("🎉 End Bidding 🎉"):
+    if st.session_state.bids:
+        st.session_state.show_bids = True
+        winner, highest_bid = highest_bidder(st.session_state.bids)
+        st.success(f"🏆 The highest bidder is {winner} with a bid of ${highest_bid}! 🏅")
+        st.balloons()  # Balloons effect when the winner is announced
+        st.info("🎉 Congratulations! The player joins your team. 🏏")
+        st.session_state.bids.clear()
+        st.session_state.player_to_bid = rd.choice(ipl_players)
+    else:
+        st.error("⚠️ No bids placed yet!")
+
+# Display current bids if bidding has ended
+if st.session_state.show_bids:
+    st.write("💬 Current Bids:")
+    for team, bid in st.session_state.bids.items():
+        st.write(f"📢 Team {team}: ${bid} 💸")
